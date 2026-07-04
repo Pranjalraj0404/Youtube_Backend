@@ -7,3 +7,8 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Temporary uploads
+public/temp/*
+!public/temp/.gitkeep
+
