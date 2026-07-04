@@ -1,29 +1,29 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models/user.model.js';
-import { ApiError } from '../utils/apiError.js';
+import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
-  const token = req.cookies.accessToken || req.header('Authorization')?.replace('Bearer ', '');
-
-  if (!token) {
-    return next(new ApiError('Authentication token is missing', 401));
-  }
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const token = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '');
 
-    const user = await User.findById(decodedToken?._id).select('-password -refeshTokens')
+    if (!token) {
+      throw new ApiError(401, 'Unauthorized request: Token is missing');
+    }
 
-if (!user) {
-      return next(new ApiError('User not found', 404));
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+    const user = await User.findById(decoded?._id).select('-password -refreshToken');
+
+    if (!user) {
+      throw new ApiError(401, 'Invalid Access Token: User not found');
+    }
 
     req.user = user;
     next();
-    }
-
   } catch (error) {
-    throw new ApiError('Invalid authentication token', 401);
+    throw new ApiError(401, error?.message || 'Invalid authentication token');
   }
-  
 });
+
 
